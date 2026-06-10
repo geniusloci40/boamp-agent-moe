@@ -2,7 +2,7 @@ name: BOAMP Maîtrise d'Oeuvre Daily
 
 on:
   schedule:
-    - cron: '1 2 * * *'
+    - cron: '0 11 * * *'
   workflow_dispatch:
 
 env:
