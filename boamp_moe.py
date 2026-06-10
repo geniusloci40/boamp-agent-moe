@@ -15,18 +15,18 @@ BOAMP_API = "https://boamp-datadila.opendatasoft.com/api/explore/v2.1/catalog/da
 
 def fetch_tenders():
     three_days_ago = (datetime.now(timezone.utc) - timedelta(days=3)).strftime("%Y-%m-%d")
-    params = {
-        "q": "maîtrise d'oeuvre",
-        "refine": 'nature_categorise_libelle:"Avis de marché"',
-        "where": f'dateparution >= "{three_days_ago}"',
-        "limit": 100,
-        "select": "idweb,titre,dateparution,objet,nomacheteur,lieuexecution,code_departement,donnees",
-        "order_by": "dateparution DESC",
-        "lang": "fr",
-        "timezone": "Europe/Paris",
-    }
+    url = (
+        f"{BOAMP_API}"
+        f"?q=ma%C3%AEtrise+d%27oeuvre"
+        f"&where=dateparution+%3E%3D+%22{three_days_ago}%22"
+        f"&limit=100"
+        f"&select=idweb%2Ctitre%2Cdateparution%2Cobjet%2Cnomacheteur%2Clieuexecution%2Ccode_departement"
+        f"&order_by=dateparution+DESC"
+        f"&lang=fr"
+        f"&timezone=Europe%2FParis"
+    )
     try:
-        resp = requests.get(BOAMP_API, params=params, timeout=30)
+        resp = requests.get(url, timeout=30)
         resp.raise_for_status()
         data = resp.json()
         print(f"  → API response: {data.get('total_count', 0)} totali")
