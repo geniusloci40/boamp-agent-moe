@@ -35,6 +35,15 @@ def fetch_tenders():
 def assess_relevance(tenders):
     if not tenders:
         return []
+    
+    # Se non c'è la chiave Anthropic, restituisce tutti gli annunci senza filtro
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        print("[INFO] ANTHROPIC_API_KEY non trovata — filtro AI disabilitato, invio tutti gli annunci")
+        for t in tenders:
+            t["_motivo"] = "Filtro AI non attivo"
+            t["_missione"] = "—"
+        return tenders
+    
     client = Anthropic()
     batch = [{"id": t.get("id",""), "titre": t.get("titre",""), "objet": (t.get("objet") or "")[:400], "acheteur": t.get("nomacheteur",""), "lieu": t.get("lieuexecution","")} for t in tenders]
     prompt = f"""Sei un assistente per uno studio di architettura indipendente francese.
@@ -50,7 +59,7 @@ Annunci:
     try:
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=2000,
+            max_tokens=1000,
             messages=[{"role": "user", "content": prompt}]
         )
         raw = response.content[0].text.strip().replace("```json","").replace("```","").strip()
