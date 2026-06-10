@@ -16,10 +16,10 @@ SEARCH_KEYWORD = "maîtrise d'oeuvre"
 BOAMP_API = "https://www.boamp.fr/api/explore/v2.1/catalog/datasets/boamp/records"
 
 def fetch_tenders():
-    yesterday = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
+    three_days_ago = (datetime.utcnow() - timedelta(days=3)).strftime("%Y-%m-%d")
     cpv_filter = " OR ".join([f'cpv LIKE "{c[:4]}"' for c in CPV_CODES])
     params = {
-        "where": f"({cpv_filter} OR suggest:\"{SEARCH_KEYWORD}\") AND dateparution >= \"{yesterday}\"",
+        "where": f"({cpv_filter}) AND dateparution >= \"{three_days_ago}\"",
         "limit": 100,
         "select": "id,titre,dateparution,cpv,objet,nomacheteur,lieuexecution",
         "order_by": "dateparution DESC",
@@ -27,7 +27,9 @@ def fetch_tenders():
     try:
         resp = requests.get(BOAMP_API, params=params, timeout=30)
         resp.raise_for_status()
-        return resp.json().get("results", [])
+        data = resp.json()
+        print(f"  → API response: {data.get('total_count', 0)} totali")
+        return data.get("results", [])
     except Exception as e:
         print(f"[ERRORE] Fetch BOAMP: {e}")
         return []
